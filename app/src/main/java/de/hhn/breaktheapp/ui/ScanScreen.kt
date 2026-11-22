@@ -1,7 +1,6 @@
 package de.hhn.breaktheapp.ui
 
 import android.Manifest
-import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +21,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -67,6 +65,10 @@ private fun LocationCard(state: LocationState) {
                     Text("Länge: ${format(state.lon)}")
                     Text("Genauigkeit: ${state.accuracy.toInt()} m")
                 }
+                is LocationState.Error -> Text(
+                    state.message,
+                    color = MaterialTheme.colorScheme.error
+                )
             }
         }
     }
@@ -74,17 +76,15 @@ private fun LocationCard(state: LocationState) {
 
 @Composable
 private fun LocationButton(viewModel: ScanViewModel) {
-    val activity = LocalContext.current as Activity
-
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { result ->
-        val fine = result[Manifest.permission.ACCESS_FINE_LOCATION] == true
-        if (fine) {
+        // genau ODER ungefähr reicht
+        val granted = result.values.any { it }
+        if (granted) {
             viewModel.loadLocation()
-        } else if (activity.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
-            // Nutzer hat vielleicht nur "ungefähr" gewählt, dann reicht der ungefähre Standort
-            viewModel.loadLocation()
+        } else {
+            viewModel.onPermissionDenied()
         }
     }
 
