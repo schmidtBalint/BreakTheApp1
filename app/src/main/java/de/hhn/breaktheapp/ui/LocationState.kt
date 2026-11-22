@@ -4,5 +4,5 @@ sealed interface LocationState {
     data object Idle : LocationState
     data object Loading : LocationState
     data class Success(val lat: Double, val lon: Double, val accuracy: Float) : LocationState
-    data class Error(val message: String) : LocationState
+    data class Error(val message: String, val showSettings: Boolean = false) : LocationState
 }

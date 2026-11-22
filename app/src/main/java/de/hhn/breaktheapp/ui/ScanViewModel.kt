@@ -17,8 +17,15 @@ class ScanViewModel(application: Application) : AndroidViewModel(application) {
     private val _state = MutableStateFlow<LocationState>(LocationState.Idle)
     val state: StateFlow<LocationState> = _state.asStateFlow()
 
-    fun onPermissionDenied() {
-        _state.value = LocationState.Error("Ohne Standortrecht kann die App deinen Standort nicht anzeigen.")
+    fun onPermissionDenied(permanently: Boolean = false) {
+        _state.value = if (permanently) {
+            LocationState.Error(
+                "Das Standortrecht ist dauerhaft verweigert. Du kannst es in den Einstellungen erlauben.",
+                showSettings = true
+            )
+        } else {
+            LocationState.Error("Ohne Standortrecht kann die App deinen Standort nicht anzeigen.")
+        }
     }
 
     fun loadLocation() {
