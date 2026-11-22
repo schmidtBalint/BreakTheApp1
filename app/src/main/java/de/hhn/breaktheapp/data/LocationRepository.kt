@@ -5,6 +5,7 @@ import android.content.Context
 import android.location.LocationManager
 import androidx.core.location.LocationManagerCompat
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import de.hhn.breaktheapp.ui.LocationState
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withTimeoutOrNull
@@ -19,8 +20,9 @@ class LocationRepository(context: Context) {
         if (!LocationManagerCompat.isLocationEnabled(locationManager))
             return LocationState.Error("Standortdienste sind aus. Bitte in den Schnelleinstellungen einschalten.")
         val loc = withTimeoutOrNull(5_000) {
-            fused.lastLocation.await()!!
-        } ?: return LocationState.Error("Zeitüberschreitung beim Standort")
-        return LocationState.Success(loc.latitude, loc.longitude, loc.accuracy)
+            fused.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null).await()
+        }
+        return loc?.let { LocationState.Success(it.latitude, it.longitude, it.accuracy) }
+            ?: LocationState.Error("Kein Standort ermittelbar")
     }
 }
