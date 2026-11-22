@@ -35,8 +35,7 @@ class ScanViewModel(application: Application) : AndroidViewModel(application) {
         }
         _state.value = LocationState.Loading
         viewModelScope.launch {
-            val loc = repository.getLocation()
-            _state.value = LocationState.Success(loc.latitude, loc.longitude, loc.accuracy)
+            _state.value = repository.getLocation()
         }
     }
 }
